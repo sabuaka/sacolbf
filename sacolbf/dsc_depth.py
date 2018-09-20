@@ -24,7 +24,7 @@ class DatasetDepth():
     def __mk_empty_depth_data(self):
         return np.empty((0, 2), dtype=np.dtype(Decimal))
 
-    def __update_depth(self, raw_list, depth_list, diff, asc):
+    def __update_depth(self, raw_list, depth_list, diff, asc, mpf):
         # make new list by numpy
         new_list = depth_list
         for data in raw_list:
@@ -41,17 +41,32 @@ class DatasetDepth():
             if new_amount != 0:
                 new_list = np.append(new_list, np.array([[new_price, new_amount]]), axis=0)
 
-        # sort depth by price
+        # sort depth by price and adjust array length and mid price filter
         if asc:  # for ask
             new_list = new_list[np.argsort(new_list[:, 0])]
+
+            if new_list.shape[0] > self.PRM_MAX_LEN:
+                new_list = np.delete(new_list,
+                                     np.where(new_list[:, 0] >= new_list[self.PRM_MAX_LEN - 1][0]),
+                                     axis=0)
+
+            if mpf:
+                new_list = np.delete(new_list,
+                                     np.where(new_list[:, 0] <= self.mid_price),
+                                     axis=0)
+
         else:    # for bid
             new_list = new_list[np.argsort(new_list[:, 0])[::-1]]
 
-        # adjust array length
-        if new_list.shape[0] > self.PRM_MAX_LEN:
-            new_list = np.delete(new_list,
-                                 np.where(new_list[:, 0] >= new_list[self.PRM_MAX_LEN - 1][0]),
-                                 axis=0)
+            if new_list.shape[0] > self.PRM_MAX_LEN:
+                new_list = np.delete(new_list,
+                                     np.where(new_list[:, 0] <= new_list[self.PRM_MAX_LEN - 1][0]),
+                                     axis=0)
+
+            if mpf:
+                new_list = np.delete(new_list,
+                                     np.where(new_list[:, 0] >= self.mid_price),
+                                     axis=0)
 
         # return new list
         return new_list
@@ -64,7 +79,7 @@ class DatasetDepth():
             return True
         return False
 
-    def init_data(self, raw_mid_price, raw_ask_list, raw_bid_list):
+    def init_data(self, raw_mid_price, raw_ask_list, raw_bid_list, mpf=True):
         '''initialize data (for snapshot data)'''
         # set mid price
         self.mid_price = n2d(raw_mid_price)
@@ -72,14 +87,14 @@ class DatasetDepth():
         # set ask depth
         if len(raw_ask_list) > 0:
             self.asks = self.__mk_empty_depth_data()
-            self.asks = self.__update_depth(raw_ask_list, self.asks, diff=False, asc=True)
+            self.asks = self.__update_depth(raw_ask_list, self.asks, diff=False, asc=True, mpf=mpf)
 
         # set bid depth
         if len(raw_bid_list) > 0:
             self.bids = self.__mk_empty_depth_data()
-            self.bids = self.__update_depth(raw_bid_list, self.bids, diff=False, asc=False)
+            self.bids = self.__update_depth(raw_bid_list, self.bids, diff=False, asc=False, mpf=mpf)
 
-    def update_data(self, raw_mid_price, raw_ask_list, raw_bid_list):
+    def update_data(self, raw_mid_price, raw_ask_list, raw_bid_list, mpf=True):
         '''update data (for differential data)'''
         # initial check
         if self.asks is None or self.bids is None:
@@ -89,10 +104,10 @@ class DatasetDepth():
         self.mid_price = n2d(raw_mid_price)
 
         # set ask depth
-        self.asks = self.__update_depth(raw_ask_list, self.asks, diff=True, asc=True)
+        self.asks = self.__update_depth(raw_ask_list, self.asks, diff=True, asc=True, mpf=mpf)
 
         # set bid depth
-        self.bids = self.__update_depth(raw_bid_list, self.bids, diff=True, asc=False)
+        self.bids = self.__update_depth(raw_bid_list, self.bids, diff=True, asc=False, mpf=mpf)
 
     def get_range_depth(self, price_range):
         '''get range depth data'''

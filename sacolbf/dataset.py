@@ -20,11 +20,11 @@ class SADataset():
         if pair == RTAPI.TradePair.BTC_JPY.value:
             pass
         elif pair == RTAPI.TradePair.FX_BTC_JPY.value:
-            self.dsc_depth_fx.init_data(data.mid_price, data.asks, data.bids)
+            self.dsc_depth_fx.init_data(data.mid_price, data.asks, data.bids, mpf=True)
 
     def analyze_depth_df(self, pair, data):
         '''analyze depth difference data'''
         if pair == RTAPI.TradePair.BTC_JPY.value:
             pass
         elif pair == RTAPI.TradePair.FX_BTC_JPY.value:
-            self.dsc_depth_fx.update_data(data.mid_price, data.asks, data.bids)
+            self.dsc_depth_fx.update_data(data.mid_price, data.asks, data.bids, mpf=True)
