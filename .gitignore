@@ -132,3 +132,4 @@ Temporary Items
 # ***** for user *****
 secret_*
 test_*.py
+log/

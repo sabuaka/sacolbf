@@ -46,6 +46,9 @@ class SACollector():
         elif event == MsgEvent.BOARD_DF:
             self.dataset.analyze_depth_df(pair, data)
             up_evt = UpdateEvent.DEPTH
+        elif event == MsgEvent.EXECUTIONS:
+            self.dataset.analyze_trade(pair, data)
+            up_evt = UpdateEvent.TRADE
 
         if self.__event_callback:
             self.__event_callback(up_evt, self.dataset)
