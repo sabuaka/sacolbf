@@ -28,8 +28,15 @@ class DatasetTrade():
         self.MAX_KEEP_SEC = max_keep_sec
         self.buys = []
         self.sells = []
+        self.last_price = None
 
         self.__range_start_dt = None
+
+    def is_available(self):
+        '''data available'''
+        if self.last_price is not None:
+            return True
+        return False
 
     def __add_data(self, exec_data):
 
@@ -113,3 +120,6 @@ class DatasetTrade():
 
         # remove out of range data
         self.__remove_rangeout_data()
+
+        # get the last tread price
+        self.last_price = raw_executions_list[-1].price
