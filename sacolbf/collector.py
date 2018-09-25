@@ -12,14 +12,6 @@ from .manager import MsgEvent
 from .dataset import SADataset
 
 
-class UpdateEvent(IntEnum):
-    '''Change event type'''
-    DEPTH = auto()
-    TICK = auto()
-    TRADE = auto()
-    ERROR = auto()
-
-
 class SACollector():
     '''Collector class'''
 
@@ -37,25 +29,32 @@ class SACollector():
 
         self.dataset = SADataset()
 
+    class UpdateEvent(IntEnum):
+        '''Change event type'''
+        DEPTH = auto()
+        TICK = auto()
+        TRADE = auto()
+        ERROR = auto()
+
     def __on_msg_event(self, mgr, event, pair, data):  # fixed I/F pylint: disable-msg=W0613
-        up_evt = UpdateEvent.ERROR
+        up_evt = self.UpdateEvent.ERROR
 
         if event == MsgEvent.BOARD_SS:
             self.dataset.analyze_depth_ss(pair, data)
-            up_evt = UpdateEvent.DEPTH
+            up_evt = self.UpdateEvent.DEPTH
         elif event == MsgEvent.BOARD_DF:
             self.dataset.analyze_depth_df(pair, data)
-            up_evt = UpdateEvent.DEPTH
+            up_evt = self.UpdateEvent.DEPTH
         elif event == MsgEvent.EXECUTIONS:
             self.dataset.analyze_trade(pair, data)
-            up_evt = UpdateEvent.TRADE
+            up_evt = self.UpdateEvent.TRADE
 
         if self.__event_callback:
             self.__event_callback(up_evt, self.dataset)
 
     def __on_err_event(self, mgr, ex):  # fixed I/F pylint: disable-msg=W0613
         if self.__event_callback:
-            self.__event_callback(UpdateEvent.ERROR, None)
+            self.__event_callback(self.UpdateEvent.ERROR, None)
 
     def __task_proc_listning(self):
         self._rtapi_mgr.start()
