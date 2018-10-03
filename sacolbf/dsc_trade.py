@@ -110,7 +110,7 @@ class DatasetTrade():
         return dfloor(total_price, 0), total_amount
 
     def check_exec_sell(self, oid) -> (Decimal, Decimal):
-        '''check excution for sell order'''
+        '''check the execution of sell order'''
         # for exec_data in self.sells:
         price_list = []
         amount_list = []
