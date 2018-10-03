@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from enum import IntEnum
 
-from sautility.num import n2d
+from sautility.num import n2d, dfloor
 
 
 class DatasetTrade():
@@ -19,9 +19,10 @@ class DatasetTrade():
     class TRADE_ARRAY(IntEnum):
         '''array position '''
         TIME = 0
-        AMOUNT = 1
-        BUY_ID = 2
-        SELL_ID = 3
+        PRICE = 1
+        AMOUNT = 2
+        BUY_ID = 3
+        SELL_ID = 4
 
     def __init__(self, max_keep_sec=300):
 
@@ -40,15 +41,16 @@ class DatasetTrade():
 
     def __add_data(self, exec_data):
 
-        exec_dt = datetime.strptime(exec_data.exec_date[0:22], self.BROKER_TIMESTAMP_FORMAT)
-        exec_amount = n2d(exec_data.size)
-        exec_buy_id = exec_data.buy_child_order_acceptance_id
-        exec_sell_id = exec_data.sell_child_order_acceptance_id
+        val_dt = datetime.strptime(exec_data.exec_date[0:22], self.BROKER_TIMESTAMP_FORMAT)
+        val_price = n2d(exec_data.price)
+        val_amount = n2d(exec_data.size)
+        val_buy_id = exec_data.buy_child_order_acceptance_id
+        val_sell_id = exec_data.sell_child_order_acceptance_id
 
         if exec_data.side == "BUY":
-            self.buys.append([exec_dt, exec_amount, exec_buy_id, exec_sell_id])
+            self.buys.append([val_dt, val_price, val_amount, val_buy_id, val_sell_id])
         elif exec_data.side == "SELL":
-            self.sells.append([exec_dt, exec_amount, exec_buy_id, exec_sell_id])
+            self.sells.append([val_dt, val_price, val_amount, val_buy_id, val_sell_id])
 
     def __remove_rangeout_data(self):
 
@@ -84,28 +86,52 @@ class DatasetTrade():
 
         return amount_buy, amount_sell
 
-    def get_exec_amount_buy(self, oid) -> Decimal:
-        '''check excution for buy order'''
-        exec_amount = n2d(0.0)
-        for exec_data in self.buys:  # taker
-            if exec_data[self.TRADE_ARRAY.BUY_ID] == oid:
-                exec_amount += exec_data[self.TRADE_ARRAY.AMOUNT]
-        for exec_data in self.sells:  # maker
-            if exec_data[self.TRADE_ARRAY.BUY_ID] == oid:
-                exec_amount += exec_data[self.TRADE_ARRAY.AMOUNT]
-        return exec_amount
+    def check_exec_buy(self, oid) -> (Decimal, Decimal):
+        '''check the execution of buy order'''
+        price_list = []
+        amount_list = []
+        total_price = n2d(0.0)
+        total_amount = n2d(0.0)
 
-    def get_exec_amount_sell(self, oid) -> Decimal:
+        for datas in self.buys:  # taker
+            if datas[self.TRADE_ARRAY.BUY_ID] == oid:
+                price_list.append(datas[self.TRADE_ARRAY.PRICE])
+                amount_list.append(datas[self.TRADE_ARRAY.AMOUNT])
+
+        for datas in self.sells:  # maker
+            if datas[self.TRADE_ARRAY.BUY_ID] == oid:
+                price_list.append(datas[self.TRADE_ARRAY.PRICE])
+                amount_list.append(datas[self.TRADE_ARRAY.AMOUNT])
+
+        total_amount = sum(amount_list)
+        for part_price, part_amount in zip(price_list, amount_list):
+            total_price += (part_price * (part_amount / total_amount))
+
+        return dfloor(total_price, 0), total_amount
+
+    def check_exec_sell(self, oid) -> (Decimal, Decimal):
         '''check excution for sell order'''
         # for exec_data in self.sells:
-        exec_amount = n2d(0.0)
-        for exec_data in self.buys:  # maker
-            if exec_data[self.TRADE_ARRAY.SELL_ID] == oid:
-                exec_amount += exec_data[self.TRADE_ARRAY.AMOUNT]
-        for exec_data in self.sells:  # taker
-            if exec_data[self.TRADE_ARRAY.SELL_ID] == oid:
-                exec_amount += exec_data[self.TRADE_ARRAY.AMOUNT]
-        return exec_amount
+        price_list = []
+        amount_list = []
+        total_price = n2d(0.0)
+        total_amount = n2d(0.0)
+
+        for datas in self.buys:  # maker
+            if datas[self.TRADE_ARRAY.SELL_ID] == oid:
+                price_list.append(datas[self.TRADE_ARRAY.PRICE])
+                amount_list.append(datas[self.TRADE_ARRAY.AMOUNT])
+
+        for datas in self.sells:  # taker
+            if datas[self.TRADE_ARRAY.SELL_ID] == oid:
+                price_list.append(datas[self.TRADE_ARRAY.PRICE])
+                amount_list.append(datas[self.TRADE_ARRAY.AMOUNT])
+
+        total_amount = sum(amount_list)
+        for part_price, part_amount in zip(price_list, amount_list):
+            total_price += (part_price * (part_amount / total_amount))
+
+        return dfloor(total_price, 0), total_amount
 
     def update_date(self, raw_executions_list):
         '''update data'''
