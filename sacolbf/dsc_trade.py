@@ -24,14 +24,18 @@ class DatasetTrade():
         BUY_ID = 3
         SELL_ID = 4
 
-    def __init__(self, max_keep_sec=300):
+    def __init__(self, max_keep_sec=60):
 
-        self.MAX_KEEP_SEC = max_keep_sec
+        self.__prm_max_keep_sec = max_keep_sec
         self.buys = []
         self.sells = []
         self.last_price = None
 
         self.__range_start_dt = None
+
+    def prmset_max_keep_sec(self, value):
+        '''set parameter of max_keep_sec'''
+        self.__prm_max_keep_sec = value
 
     def is_available(self):
         '''data available'''
@@ -54,7 +58,7 @@ class DatasetTrade():
 
     def __remove_rangeout_data(self):
 
-        range_dt = datetime.utcnow() - timedelta(seconds=self.MAX_KEEP_SEC)
+        range_dt = datetime.utcnow() - timedelta(seconds=self.__prm_max_keep_sec)
 
         def _create_new_list(target_list):
             new_lst = [ed for ed in target_list if ed[self.TRADE_ARRAY.TIME] > range_dt]
