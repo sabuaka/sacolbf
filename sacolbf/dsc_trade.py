@@ -45,7 +45,8 @@ class DatasetTrade():
 
     def __add_data(self, exec_data):
 
-        val_dt = datetime.strptime(exec_data.exec_date[0:22], self.BROKER_TIMESTAMP_FORMAT)
+        wk_utc_dt = datetime.strptime(exec_data.exec_date[0:22], self.BROKER_TIMESTAMP_FORMAT)
+        val_dt = wk_utc_dt + timedelta(hours=9)
         val_price = n2d(exec_data.price)
         val_amount = n2d(exec_data.size)
         val_buy_id = exec_data.buy_child_order_acceptance_id
@@ -58,7 +59,7 @@ class DatasetTrade():
 
     def __remove_rangeout_data(self):
 
-        range_dt = datetime.utcnow() - timedelta(seconds=self.__prm_max_keep_sec)
+        range_dt = datetime.now() - timedelta(seconds=self.__prm_max_keep_sec)
 
         def _create_new_list(target_list):
             new_lst = [ed for ed in target_list if ed[self.TRADE_ARRAY.TIME] > range_dt]
@@ -83,7 +84,7 @@ class DatasetTrade():
 
             return n2d(0.0)
 
-        prm_range = datetime.utcnow() - timedelta(seconds=sec)
+        prm_range = datetime.now() - timedelta(seconds=sec)
 
         amount_buy = _query_data(self.buys, prm_range)
         amount_sell = _query_data(self.sells, prm_range)
