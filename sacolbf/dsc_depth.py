@@ -149,10 +149,10 @@ class DatasetDepth():
             self.price_ask = depth_asks[self.idx_ask][0]
             self.price_bid = depth_bids[self.idx_bid][0]
             self.spread = self.price_ask - self.price_bid
-            self.divergence = (self.price_ask / self.price_bid) - n2d(1.0)
+            self.spread_rate = (self.price_ask / self.price_bid) - n2d(1.0)
 
     def get_spread(self, amount_filter_ask=None, amount_filter_bid=None):
-        '''get spread and divergence rate'''
+        '''get spread and spread(difference) rate'''
         return self.SpreadInfo(self.asks, self.bids, amount_filter_ask, amount_filter_bid)
 
     class StatisticsInfo():
