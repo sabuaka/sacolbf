@@ -12,7 +12,7 @@ from sautility.num import n2d, dfloor
 
 
 class DatasetTrade():
-    '''class for dataset of depth'''
+    '''class for dataset of trade'''
 
     BROKER_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
 
