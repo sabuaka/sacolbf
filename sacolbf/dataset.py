@@ -8,6 +8,7 @@ from sabitflyer.realtime import RealtimeAPI as RTAPI
 
 from .dsc_depth import DatasetDepth
 from .dsc_trade import DatasetTrade
+from .dsc_tick import DatasetTick
 
 
 class SADataset():
@@ -16,6 +17,7 @@ class SADataset():
     def __init__(self):
         self.dsc_depth_fx = DatasetDepth()
         self.dsc_trade_fx = DatasetTrade()
+        self.dsc_tick_fx = DatasetTick()
 
     def analyze_depth_ss(self, pair, data):
         '''analyze depth snapshot data'''
@@ -37,3 +39,10 @@ class SADataset():
             pass
         elif pair == RTAPI.TradePair.FX_BTC_JPY.value:
             self.dsc_trade_fx.update_date(data)
+
+    def analyze_ticker(self, pair, data):
+        '''analyze tick data'''
+        if pair == RTAPI.TradePair.BTC_JPY.value:
+            pass
+        elif pair == RTAPI.TradePair.FX_BTC_JPY.value:
+            self.dsc_tick_fx.update_date(data)

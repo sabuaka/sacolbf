@@ -48,6 +48,9 @@ class SACollector():
         elif event == MsgEvent.EXECUTIONS:
             self.dataset.analyze_trade(pair, data)
             up_evt = self.UpdateEvent.TRADE
+        elif event == MsgEvent.TICKER:
+            self.dataset.analyze_ticker(pair, data)
+            up_evt = self.UpdateEvent.TICK
 
         if self.__event_callback:
             self.__event_callback(up_evt, self.dataset)

@@ -27,7 +27,8 @@ class RTAPIManager():
     __LISTEN_CHANNELS = [
         RealtimeAPI.ListenChannel.BOARD_SNAPSHOT_FX_BTC_JPY,
         RealtimeAPI.ListenChannel.BOARD_FX_BTC_JPY,
-        RealtimeAPI.ListenChannel.EXECUTIONS_FX_BTC_JPY
+        RealtimeAPI.ListenChannel.EXECUTIONS_FX_BTC_JPY,
+        RealtimeAPI.ListenChannel.TICKER_FX_BTC_JPY
     ]
     __API_PING_INTERVAL = 30    # sec
     __API_PING_TIMEOUT = 10     # sec
