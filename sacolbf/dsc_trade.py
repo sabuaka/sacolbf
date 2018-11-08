@@ -12,7 +12,14 @@ from sautility.num import n2d, dfloor
 
 
 class DatasetTrade():
-    '''class for dataset of trade'''
+    '''
+    dataset for trade data
+
+    Parameters
+    ----------
+    keep_time : int
+        data keeping time (sec)
+    '''
 
     BROKER_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
 
@@ -24,18 +31,18 @@ class DatasetTrade():
         BUY_ID = 3
         SELL_ID = 4
 
-    def __init__(self, max_keep_sec=60):
+    def __init__(self, keep_time):
 
-        self.__prm_max_keep_sec = max_keep_sec
+        self.__prm_keep_time = keep_time
         self.buys = []
         self.sells = []
         self.last_price = None
 
         self.__range_start_dt = None
 
-    def prmset_max_keep_sec(self, value):
+    def prmset_keep_time(self, value):
         '''set parameter of max_keep_sec'''
-        self.__prm_max_keep_sec = value
+        self.__prm_keep_time = value
 
     def is_available(self):
         '''data available'''
@@ -59,7 +66,7 @@ class DatasetTrade():
 
     def __remove_rangeout_data(self):
 
-        range_dt = datetime.now() - timedelta(seconds=self.__prm_max_keep_sec)
+        range_dt = datetime.now() - timedelta(seconds=self.__prm_keep_time)
 
         def _create_new_list(target_list):
             new_lst = [ed for ed in target_list if ed[self.TRADE_ARRAY.TIME] > range_dt]
@@ -70,8 +77,11 @@ class DatasetTrade():
         _create_new_list(self.buys)
         _create_new_list(self.sells)
 
-    def get_amount(self, sec=60):
+    def get_amount(self, sec=None):
         '''get trade amount -> buy, sell'''
+
+        if sec is None:
+            sec = self.__prm_keep_time
 
         def _query_data(target_list, prm_range):
 

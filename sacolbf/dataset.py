@@ -14,9 +14,11 @@ from .dsc_tick import DatasetTick
 class SADataset():
     '''Dataset parent class'''
 
+    DEFAULT_KEEP_TIME = 60  # sec
+
     def __init__(self):
         self.dsc_depth_fx = DatasetDepth()
-        self.dsc_trade_fx = DatasetTrade()
+        self.dsc_trade_fx = DatasetTrade(self.DEFAULT_KEEP_TIME)
         self.dsc_tick_fx = DatasetTick()
 
     def analyze_depth_ss(self, pair, data):
