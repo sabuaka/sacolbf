@@ -10,38 +10,50 @@ from sautility import dt
 from sacolbf import SACollector as SACol
 from sacolbf import SADataset as DS
 
+# pylint: disable-msg=C0103,C1801,R0201,R0902,R0903,W0702
+
 
 class AnalysisGraph():
     ''''spred graph by matplotlib'''
 
-    PRM_MAIN_PLOT_RANGE = 5000  # msec
+    PRM_MAIN_PLOT_RANGE = 8000  # msec
     PRM_MAIN_PLOT_OFFSET = -500  # msec
 
-    # [main:left]define for spread
-    PRM_TICK_PRICE_TITLE = 'Tick price'
+    # [axes1] define for tick
+    PRM_TICK_PRICE_TITLE = 'tick price'
     PRM_TICK_PRICE_LINE_COLOR = '#DE9610'
     PRM_TICK_PRICE_LINE_WIDTH = 2.0
 
-    PRM_TICK_ASK_TITLE = 'Tick Ask'
+    PRM_TICK_ASK_TITLE = 'tick ask'
     PRM_TICK_ASK_LINE_COLOR = '#0074BF'
     PRM_TICK_ASK_LINE_WIDTH = 2.0
 
-    PRM_TICK_BID_TITLE = 'Tick Bid'
+    PRM_TICK_BID_TITLE = 'tick bid'
     PRM_TICK_BID_LINE_COLOR = '#C93A40'
     PRM_TICK_BID_LINE_WIDTH = 2.0
 
-    # [sub1:left]define for spread
+    # [axes2] define for spread
     PRM_SPREAD_PRICE_TITLE = 'spread price'
     PRM_SPREAD_PRICE_LINE_COLOR = '#C93A40'
     PRM_SPREAD_PRICE_LINE_WIDTH = 2.0
+
+    # [axes3] define for depth by tick data
+    PRM_TICK_TOTAL_ASK_TITLE = 'tick total ask'
+    PRM_TICK_TOTAL_ASK_LINE_COLOR = '#0074BF'
+    PRM_TICK_TOTAL_ASK_LINE_WIDTH = 2.0
+
+    PRM_TICK_TOTAL_BID_TITLE = 'tick total bid'
+    PRM_TICK_TOTAL_BID_LINE_COLOR = '#C93A40'
+    PRM_TICK_TOTAL_BID_LINE_WIDTH = 2.0
 
     class PlotLines():
         '''Lines for plot'''
         tick_price = None
         tick_ask = None
         tick_bid = None
-        ma_s5_diff = None
         spread_price = None
+        total_bid_amount = None
+        total_ask_amount = None
 
     def __init__(self):
 
@@ -52,14 +64,18 @@ class AnalysisGraph():
 
         self.buff_spread_price = np.empty((0, 2))
 
+        self.buff_total_bid_amount = np.empty((0, 2))
+        self.buff_total_ask_amount = np.empty((0, 2))
+
         # configure figure and plot
         plt.style.use('dark_background')
 
         self.fig = plt.figure(figsize=(14, 8))
 
-        self.axes1_main = self.fig.add_axes((0.1, 0.3, 0.8, 0.6))
-        self.axes2_main = self.fig.add_axes((0.1, 0.1, 0.8, 0.2), sharex=self.axes1_main)
-        axes_list = [self.axes1_main, self.axes2_main]
+        self.axes1_main = self.fig.add_axes((0.1, 0.5, 0.8, 0.4))
+        self.axes2_main = self.fig.add_axes((0.1, 0.3, 0.8, 0.2), sharex=self.axes1_main)
+        self.axes3_main = self.fig.add_axes((0.1, 0.1, 0.8, 0.2), sharex=self.axes1_main)
+        axes_list = [self.axes1_main, self.axes2_main, self.axes3_main]
         self.__configure_x_axis(axes_list)
 
         # create lines
@@ -105,6 +121,26 @@ class AnalysisGraph():
         lines_list = [self.lines.spread_price]
         label_list = [l.get_label() for l in lines_list]
         self.axes2_main.legend(lines_list, label_list, loc='upper left')
+
+        # set axes3
+        self.lines.total_bid_amount, = self.axes3_main.plot(
+            [], [],
+            linewidth=self.PRM_TICK_TOTAL_BID_LINE_WIDTH,
+            label=self.PRM_TICK_TOTAL_BID_TITLE,
+            color=self.PRM_TICK_TOTAL_BID_LINE_COLOR)
+        self.axes3_main.yaxis.grid(True)
+
+        self.axes_total_ask_amount = self.axes3_main.twinx()
+        self.lines.total_ask_amount, = self.axes_total_ask_amount.plot(
+            [], [],
+            linewidth=self.PRM_TICK_TOTAL_ASK_LINE_WIDTH,
+            label=self.PRM_TICK_TOTAL_ASK_TITLE,
+            color=self.PRM_TICK_TOTAL_ASK_LINE_COLOR)
+        self.axes_total_ask_amount.yaxis.grid(False)
+
+        lines_list = [self.lines.total_bid_amount, self.lines.total_ask_amount]
+        label_list = [l.get_label() for l in lines_list]
+        self.axes3_main.legend(lines_list, label_list, loc='upper left')
 
     def __configure_x_axis(self, axes_list):
 
@@ -165,10 +201,36 @@ class AnalysisGraph():
             float(y_price)
         )
 
+    def update_total_amount(self, x_uts_ms, y_total_ask, y_total_bid):
+        '''update data'''
+        # create x axis data
+        x_data = x_uts_ms
+
+        # update graph data
+        self.buff_total_ask_amount = self.__update_buffer(
+            self.buff_total_ask_amount,
+            int(x_data),
+            float(y_total_ask)
+        )
+
+        self.buff_total_bid_amount = self.__update_buffer(
+            self.buff_total_bid_amount,
+            int(x_data),
+            float(y_total_bid)
+        )
+
     def draw(self, x_offset):
         '''draw graph'''
         self.__draw_fig_1_1(x_offset)
         self.__draw_fig_2_1(x_offset)
+        self.__draw_fig_3_1(x_offset)
+
+    def __set_buff_lines(self, lines, axis_buff, x_offset):
+        '''set buffer to lines'''
+        buff_x = abs(axis_buff[:, 0] - x_offset)
+        buff_y = axis_buff[:, 1]
+        lines.set_xdata(buff_x)
+        lines.set_ydata(buff_y)
 
     def __draw_fig_1_1(self, x_offset):
 
@@ -181,22 +243,15 @@ class AnalysisGraph():
         y_lim_min = min(buff_y) - 50
         y_lim_max = max(buff_y) + 50
 
-        def set_buff_lines(lines, axis_buff, x_offset):
-            '''set buffer to lines'''
-            buff_x = abs(axis_buff[:, 0] - x_offset)
-            buff_y = axis_buff[:, 1]
-            lines.set_xdata(buff_x)
-            lines.set_ydata(buff_y)
-
-        set_buff_lines(self.lines.tick_price, self.buff_tick_price, x_offset)
+        self.__set_buff_lines(self.lines.tick_price, self.buff_tick_price, x_offset)
         self.axes1_main.set_xlim(x_lim_min, x_lim_max)
         self.axes1_main.set_ylim(y_lim_min, y_lim_max)
 
-        set_buff_lines(self.lines.tick_ask, self.buff_tick_ask, x_offset)
+        self.__set_buff_lines(self.lines.tick_ask, self.buff_tick_ask, x_offset)
         self.axes_tick_ask.set_ylim(y_lim_min, y_lim_max)
         self.axes_tick_ask.set_yticks([], False)
 
-        set_buff_lines(self.lines.tick_bid, self.buff_tick_bid, x_offset)
+        self.__set_buff_lines(self.lines.tick_bid, self.buff_tick_bid, x_offset)
         self.axes_tick_bid.set_ylim(y_lim_min, y_lim_max)
         self.axes_tick_bid.set_yticks([], False)
 
@@ -206,11 +261,29 @@ class AnalysisGraph():
         y_lim_min = min(buff_y) - 5
         y_lim_max = max(buff_y) + 10
 
-        buff_x_spread_price = abs(self.buff_spread_price[:, 0] - x_offset)
-        buff_y_spread_price = self.buff_spread_price[:, 1]
+        self.__set_buff_lines(self.lines.spread_price, self.buff_spread_price, x_offset)
         self.axes2_main.set_ylim(y_lim_min, y_lim_max)
-        self.lines.spread_price.set_xdata(buff_x_spread_price)
-        self.lines.spread_price.set_ydata(buff_y_spread_price)
+
+    def __draw_fig_3_1(self, x_offset):
+
+        buff_y_total_ask_amount = self.buff_total_ask_amount[:, 1]
+        buff_y_total_bid_amount = self.buff_total_bid_amount[:, 1]
+
+        wk_min_ask = min(buff_y_total_ask_amount)
+        wk_min_bid = min(buff_y_total_bid_amount)
+        y_lim_min = wk_min_ask if wk_min_ask < wk_min_bid else wk_min_bid
+        y_lim_min = int(y_lim_min * 0.9)
+        wk_max_ask = max(buff_y_total_ask_amount)
+        wk_max_bid = max(buff_y_total_bid_amount)
+        y_lim_max = wk_max_ask if wk_max_ask > wk_max_bid else wk_max_bid
+        y_lim_max = int(y_lim_max * 1.1)
+
+        self.__set_buff_lines(self.lines.total_bid_amount, self.buff_total_bid_amount, x_offset)
+        self.axes3_main.set_ylim(y_lim_min, y_lim_max)
+
+        self.__set_buff_lines(self.lines.total_ask_amount, self.buff_total_ask_amount, x_offset)
+        self.axes_total_ask_amount.set_ylim(y_lim_min, y_lim_max)
+        # self.axes_tick_ask.set_yticks([], False)
 
 
 class MainProc():
@@ -237,6 +310,12 @@ class MainProc():
                 self.graph.update_spread(
                     uts_ms_now,
                     ds.dsc_tick_fx.spread
+                )
+
+                self.graph.update_total_amount(
+                    uts_ms_now,
+                    ds.dsc_tick_fx.total_ask_amount,
+                    ds.dsc_tick_fx.total_bid_amount
                 )
 
                 self.graph.draw(uts_ms_now)
