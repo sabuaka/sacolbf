@@ -41,7 +41,7 @@ class DatasetTrade():
         self.__range_start_dt = None
 
     def prmset_keep_time(self, value):
-        '''set parameter of max_keep_sec'''
+        '''set parameter of keep time'''
         self.__prm_keep_time = value
 
     def is_available(self):

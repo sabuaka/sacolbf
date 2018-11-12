@@ -19,7 +19,7 @@ class SADataset():
     def __init__(self):
         self.dsc_depth_fx = DatasetDepth()
         self.dsc_trade_fx = DatasetTrade(self.DEFAULT_KEEP_TIME)
-        self.dsc_tick_fx = DatasetTick()
+        self.dsc_tick_fx = DatasetTick(self.DEFAULT_KEEP_TIME)
 
     def analyze_depth_ss(self, pair, data):
         '''analyze depth snapshot data'''
