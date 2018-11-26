@@ -4,7 +4,7 @@
     This module is designed with the singleton pattern.
 '''
 from datetime import datetime, timedelta
-from . import ntplib
+from .ntplib import NTPClient
 
 from .meta_singleton import Singleton
 
@@ -37,7 +37,7 @@ class Singleton_TimeAdjuster(metaclass=Singleton):
     NTP_SERVER_HOST = 'ntp.nict.jp'
 
     def __init__(self):
-        self.ntp_client = ntplib.NTPClient()
+        self.ntp_client = NTPClient()
         self.ntp_server_host = self.NTP_SERVER_HOST
 
         self.delta = timedelta()
