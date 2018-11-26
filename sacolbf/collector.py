@@ -7,9 +7,12 @@
 import threading
 from enum import IntEnum, auto
 
+from sautility import dt
+
 from .manager import RTAPIManager
 from .manager import MsgEvent
 from .dataset import SADataset
+from .time_adjuster import TimeAdjuster
 
 
 class SACollector():
@@ -28,6 +31,8 @@ class SACollector():
         self.__thread_task_listening = None
 
         self.dataset = SADataset()
+        self.__adjtime = TimeAdjuster.get_singleton()
+        self.__updatetimer_adjtime = -1
 
     class UpdateEvent(IntEnum):
         '''Change event type'''
@@ -38,6 +43,10 @@ class SACollector():
 
     def __on_msg_event(self, mgr, event, pair, data):  # fixed I/F pylint: disable-msg=W0613
         up_evt = self.UpdateEvent.ERROR
+
+        if self.__updatetimer_adjtime != dt.get_minute():
+            self.__adjtime.update_delta()
+            self.__updatetimer_adjtime = dt.get_minute()
 
         if event == MsgEvent.BOARD_SS:
             self.dataset.analyze_depth_ss(pair, data)

@@ -10,6 +10,8 @@ from enum import IntEnum
 
 from sautility.num import n2d, dfloor
 
+from .time_adjuster import TimeAdjuster
+
 
 class DatasetTrade():
     '''
@@ -39,6 +41,7 @@ class DatasetTrade():
         self.last_price = None
 
         self.__range_start_dt = None
+        self.__adjtime = TimeAdjuster.get_singleton()
 
     def prmset_keep_time(self, value):
         '''set parameter of keep time'''
@@ -66,7 +69,7 @@ class DatasetTrade():
 
     def __remove_rangeout_data(self):
 
-        range_dt = datetime.now() - timedelta(seconds=self.__prm_keep_time)
+        range_dt = self.__adjtime.get_now() - timedelta(seconds=self.__prm_keep_time)
 
         def _create_new_list(target_list):
             new_lst = [ed for ed in target_list if ed[self.TRADE_ARRAY.TIME] > range_dt]
@@ -94,7 +97,7 @@ class DatasetTrade():
 
             return n2d(0.0)
 
-        prm_range = datetime.now() - timedelta(seconds=sec)
+        prm_range = self.__adjtime.get_now() - timedelta(seconds=sec)
 
         amount_buy = _query_data(self.buys, prm_range)
         amount_sell = _query_data(self.sells, prm_range)
@@ -153,7 +156,7 @@ class DatasetTrade():
 
         # check start time
         if self.__range_start_dt is None:
-            self.__range_start_dt = datetime.now()
+            self.__range_start_dt = self.__adjtime.get_now()
 
         # add new data
         for exec_data in raw_executions_list:

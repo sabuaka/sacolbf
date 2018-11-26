@@ -10,6 +10,8 @@ from enum import IntEnum
 from sabitflyer import RealtimeAPI as RTAPI
 from sautility.num import n2d
 
+from .time_adjuster import TimeAdjuster
+
 
 class DatasetTick():
     '''class for dataset of tick'''
@@ -24,7 +26,6 @@ class DatasetTick():
     def __init__(self, keep_time):
 
         self.__prm_keep_time = keep_time
-        self.__available = False
 
         self.ts_dt = None
         self.bid_price = None
@@ -41,6 +42,9 @@ class DatasetTick():
         self.price_max = None
         self.price_min = None
 
+        self.__available = False
+        self.__adjtime = TimeAdjuster.get_singleton()
+
     def is_available(self):
         '''data available'''
         return self.__available
@@ -54,7 +58,7 @@ class DatasetTick():
         self.price_list.append([dt, price])
 
         # remove rangeout data
-        range_dt = datetime.now() - timedelta(seconds=self.__prm_keep_time)
+        range_dt = self.__adjtime.get_now() - timedelta(seconds=self.__prm_keep_time)
         new_lst = [ed for ed in self.price_list if ed[self.TRADE_PRICE_ARRAY.TIME] > range_dt]
         self.price_list.clear()
         self.price_list.extend(new_lst)
@@ -62,8 +66,12 @@ class DatasetTick():
 
         # calculate maximum and minimum
         prices = [row[1] for row in self.price_list]
-        self.price_max = max(prices)
-        self.price_min = min(prices)
+        if prices is not None and len(prices) > 0:
+            self.price_max = max(prices)
+            self.price_min = min(prices)
+        else:
+            self.price_max = None
+            self.price_min = None
 
     def update_date(self, data: RTAPI.TickerData):
         '''update data'''
