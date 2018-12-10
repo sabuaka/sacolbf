@@ -71,7 +71,9 @@ class RTAPIManager():
                 self.__msg_callback(self, event, pair, data)
             except:
                 import traceback
-                traceback.print_exc()
+                with open('error_sacolbf.log', 'a') as f:
+                    f.write(get_dt_long() + '\n')
+                    traceback.print_exc(file=f)
 
     def __on_message_board(self, rtapi, pair, board_data):
         self.__reset_wdt()
