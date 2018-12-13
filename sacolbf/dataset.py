@@ -10,6 +10,8 @@ from .dsc_depth import DatasetDepth
 from .dsc_trade import DatasetTrade
 from .dsc_tick import DatasetTick
 
+from .time_adjuster import TimeAdjuster
+
 
 class SADataset():
     '''Dataset parent class'''
@@ -20,6 +22,16 @@ class SADataset():
         self.dsc_depth_fx = DatasetDepth()
         self.dsc_trade_fx = DatasetTrade(self.DEFAULT_KEEP_TIME)
         self.dsc_tick_fx = DatasetTick(self.DEFAULT_KEEP_TIME)
+
+        self.__adjtime = TimeAdjuster.get_singleton()
+
+    def get_now(self):
+        '''
+        Gets the now time that was adjusted by the NTP server.
+        ---
+        The collector module is time adjust for an issue with wrong time of VPS server.
+        '''
+        return self.__adjtime.get_now()
 
     def analyze_depth_ss(self, pair, data):
         '''analyze depth snapshot data'''
