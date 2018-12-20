@@ -3,7 +3,7 @@
 # C1801: Do not use len(SEQUENCE) as condition value
 # W0702: No exception type(s) specified
 # R0902: too-many-instance-attributes
-disable=C0103,C1801,W0702,R0902
+disable=C0103,C1801,W0702,R0902,R0903
 
 [FORMAT]
 # Maximum number of characters on a single line.

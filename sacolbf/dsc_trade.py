@@ -40,6 +40,8 @@ class DatasetTrade():
         self.sells = []
         self.last_price = None
 
+        self.event_values = []    # 0:Time 1:price 2:amount
+
         self.__range_start_dt = None
         self.__adjtime = TimeAdjuster.get_singleton()
 
@@ -66,6 +68,8 @@ class DatasetTrade():
             self.buys.append([val_dt, val_price, val_amount, val_buy_id, val_sell_id])
         elif exec_data.side == "SELL":
             self.sells.append([val_dt, val_price, val_amount, val_buy_id, val_sell_id])
+
+        self.event_values.append([val_dt, val_price, val_amount])
 
     def __remove_rangeout_data(self):
 
@@ -159,6 +163,7 @@ class DatasetTrade():
             self.__range_start_dt = self.__adjtime.get_now()
 
         # add new data
+        self.event_values = []
         for exec_data in raw_executions_list:
             self.__add_data(exec_data)
 
