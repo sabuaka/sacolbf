@@ -167,8 +167,8 @@ class DatasetDepth():
             else:
                 self.am_min = n2d(0.0)
                 self.am_max = n2d(0.0)
-                self.am_ave = n2d(0.0)
                 self.am_sum = n2d(0.0)
+                self.am_mean = n2d(0.0)
                 self.am_median = n2d(0.0)
 
     def get_statistics(self, price_range):

@@ -32,7 +32,7 @@ class RTAPIManager():
     ]
     __API_PING_INTERVAL = 30    # sec
     __API_PING_TIMEOUT = 10     # sec
-    __WD_TIMEOUT = 60           # sec
+    __WD_TIMEOUT = 35           # sec
 
     def __out_elog(self, reason):
         if self.__elog:
@@ -93,8 +93,6 @@ class RTAPIManager():
 
     def __on_error(self, rtapi, ex):
         self.__out_elog('reboot: websocket error')
-        self.__rt_api = self.__create_rtapi()
-        self.start()
         if self.__err_callback:
             self.__err_callback(self, ex)
 
@@ -107,6 +105,8 @@ class RTAPIManager():
             delta = get_uts_s() - self.__wd_time
             if delta > self.__WD_TIMEOUT:
                 self.__out_elog('reboot: watchdog timeout')
+                self.__rt_api.stop()
+                del self.__rt_api
                 self.__rt_api = self.__create_rtapi()
                 self.start()
 
