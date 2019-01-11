@@ -171,4 +171,4 @@ class DatasetTrade():
         self.__remove_rangeout_data()
 
         # get the last tread price
-        self.last_price = raw_executions_list[-1].price
+        self.last_price = n2d(raw_executions_list[-1].price)
