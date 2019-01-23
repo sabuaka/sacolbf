@@ -84,9 +84,9 @@ class SACollector():
         self.dataset.analyze_trade(pair, datas)
         self.__exec_event_callback(self.UpdateEvent.TRADE)
 
-    def __on_error(self, _, ex):
+    def __on_error(self, _, ex): # Fixed I/F pylint: disable-msg=W0613
         if self.__event_callback:
-            self.__event_callback(self.UpdateEvent.ERROR, ex)
+            self.__event_callback(self.UpdateEvent.ERROR, None)
 
     def start(self):
         '''Listen start'''
