@@ -32,6 +32,7 @@ class SACollector():
         TICK = auto()
         TRADE = auto()
         ERROR = auto()
+        KEY_INTERRUPT_STOP = auto()
 
     def __init__(self, event_callback=None):
 
@@ -84,9 +85,12 @@ class SACollector():
         self.dataset.analyze_trade(pair, datas)
         self.__exec_event_callback(self.UpdateEvent.TRADE)
 
-    def __on_error(self, _, ex): # Fixed I/F pylint: disable-msg=W0613
+    def __on_error(self, _, ex):
         if self.__event_callback:
-            self.__event_callback(self.UpdateEvent.ERROR, None)
+            if isinstance(ex, KeyboardInterrupt):
+                self.__event_callback(self.UpdateEvent.KEY_INTERRUPT_STOP, None)
+            else:
+                self.__event_callback(self.UpdateEvent.ERROR, None)
 
     def start(self):
         '''Listen start'''

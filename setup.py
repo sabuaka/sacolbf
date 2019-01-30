@@ -3,8 +3,8 @@ from setuptools import setup
 setup(
     name='sacolbf',
     packages=['sacolbf'],
-    version='1.0.1',
-    description='Collector Library for bitFlyer',
+    version='1.1.0',
+    description='Collector library for bitFlyer',
     author='sabuaka',
     author_email='sabuaka-fx@hotmail.com',
     url="https://github.com/sabuaka/sacolbf",
