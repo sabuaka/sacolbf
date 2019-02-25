@@ -39,6 +39,8 @@ class DatasetTrade():
         self.buys = []
         self.sells = []
         self.last_price = None
+        self.last_amount = None
+        self.last_dt = None
 
         self.event_values = []    # 0:Time 1:price 2:amount
 
@@ -157,6 +159,8 @@ class DatasetTrade():
 
     def update_date(self, raw_executions_list):
         '''update data'''
+        # init value
+        self.last_amount = n2d(0.0)
 
         # check start time
         if self.__range_start_dt is None:
@@ -166,9 +170,12 @@ class DatasetTrade():
         self.event_values = []
         for exec_data in raw_executions_list:
             self.__add_data(exec_data)
+            self.last_amount += n2d(exec_data.size)
 
         # remove out of range data
         self.__remove_rangeout_data()
 
-        # get the last tread price
+        # get the last tread info
+        wk_utc = datetime.strptime(raw_executions_list[-1].exec_date[0:22], self.BROKER_TIMESTAMP_FORMAT)
+        self.last_dt = wk_utc + timedelta(hours=9)
         self.last_price = n2d(raw_executions_list[-1].price)
