@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='sacolbf',
     packages=['sacolbf'],
-    version='1.2.0',
+    version='2.0.0',
     description='Collector library for bitFlyer',
     author='sabuaka',
     author_email='sabuaka-fx@hotmail.com',
