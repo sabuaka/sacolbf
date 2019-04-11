@@ -55,3 +55,7 @@ class Singleton_TimeAdjuster(metaclass=Singleton):
     def get_now(self):
         '''get the adjusted now time'''
         return datetime.now() + self.delta
+
+    def get_uts_s(self):
+        '''get the unix timestamp in seconds (int type).'''
+        return int(self.get_now().timestamp())
