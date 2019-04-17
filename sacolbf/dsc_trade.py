@@ -47,9 +47,12 @@ class DatasetTrade():
         self.__range_start_dt = None
         self.__adjtime = TimeAdjuster.get_singleton()
 
-    def prmset_keep_time(self, value):
+    def prmset_keep_time(self, seconds=0, milliseconds=0):
         '''set parameter of keep time'''
-        self.__prm_keep_time = value
+        if seconds > 0:
+            self.__prm_keep_time = seconds * 1000
+        elif milliseconds > 0:
+            self.__prm_keep_time = milliseconds
 
     def is_available(self):
         '''data available'''
@@ -75,7 +78,7 @@ class DatasetTrade():
 
     def __remove_rangeout_data(self):
 
-        range_dt = self.__adjtime.get_now() - timedelta(seconds=self.__prm_keep_time)
+        range_dt = self.__adjtime.get_now() - timedelta(milliseconds=self.__prm_keep_time)
 
         def _create_new_list(target_list):
             new_lst = [ed for ed in target_list if ed[self.TRADE_ARRAY.TIME] > range_dt]
@@ -86,24 +89,27 @@ class DatasetTrade():
         _create_new_list(self.buys)
         _create_new_list(self.sells)
 
-    def get_amount(self, sec=None):
+    def get_amount(self, seconds=None, milliseconds=None):
         '''get trade amount -> buy, sell'''
 
-        if sec is None:
-            sec = self.__prm_keep_time
+        range_ms = self.__prm_keep_time
+        if seconds is not None and seconds > 0:
+            range_ms = seconds * 1000
+        elif milliseconds is not None and milliseconds > 0:
+            range_ms = milliseconds
 
         def _query_data(target_list, prm_range):
 
             if len(target_list) > 0:
                 sum_amount = n2d(0.0)
-                query_list = [ed for ed in target_list if ed[self.TRADE_ARRAY.TIME] >= prm_range]
+                query_list = [td for td in target_list if td[self.TRADE_ARRAY.TIME] >= prm_range]
                 for exec_data in query_list:
                     sum_amount += exec_data[self.TRADE_ARRAY.AMOUNT]
                 return sum_amount
 
             return n2d(0.0)
 
-        prm_range = self.__adjtime.get_now() - timedelta(seconds=sec)
+        prm_range = self.__adjtime.get_now() - timedelta(milliseconds=range_ms)
 
         amount_buy = _query_data(self.buys, prm_range)
         amount_sell = _query_data(self.sells, prm_range)
@@ -176,6 +182,6 @@ class DatasetTrade():
         self.__remove_rangeout_data()
 
         # get the last tread info
-        wk_utc = datetime.strptime(raw_executions_list[-1].exec_date[0:22], self.BROKER_TIMESTAMP_FORMAT)
+        wk_utc = datetime.strptime(raw_executions_list[-1].exec_date[0:23], self.BROKER_TIMESTAMP_FORMAT)
         self.last_dt = wk_utc + timedelta(hours=9)
         self.last_price = n2d(raw_executions_list[-1].price)
