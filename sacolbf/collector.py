@@ -23,7 +23,8 @@ class SACollector():
         RealtimeAPI.ListenChannel.BOARD_SNAPSHOT_FX_BTC_JPY,
         RealtimeAPI.ListenChannel.BOARD_FX_BTC_JPY,
         RealtimeAPI.ListenChannel.EXECUTIONS_FX_BTC_JPY,
-        RealtimeAPI.ListenChannel.TICKER_FX_BTC_JPY
+        RealtimeAPI.ListenChannel.TICKER_FX_BTC_JPY,
+        RealtimeAPI.ListenChannel.TICKER_BTC_JPY
     ]
 
     class UpdateEvent(IntEnum):
